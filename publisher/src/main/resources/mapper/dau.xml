@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper SYSTEM "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.asiainfo.gmall.publisher.mapper.DauMapper">
+    <select id="getCount" parameterType="java.lang.String" resultType="java.lang.Long">
+        select count(*) from gmall2019_dau where logdate=#{dayString}
+    </select>
+    <select id="getHourTotalCount" resultMap="dauResultMap">
+        select loghour,count(*) ct from gmall2019_dau where logdate=#{dayString} group by loghour
+    </select>
+    <resultMap id="dauResultMap" type="java.util.Map" autoMapping="true">
+        <result column="LOGHOUR" property="LH"></result>
+    </resultMap>
+
+</mapper>
