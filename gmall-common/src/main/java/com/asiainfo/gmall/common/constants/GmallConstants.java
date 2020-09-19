@@ -14,7 +14,7 @@ public static final String KAFKA_SERIALIZER="org.apache.kafka.common.serializati
 
 public static final String ZKURL="s102,s103,s104:2181";
 public static final String CLASSPATH_CONFIG="config.properties";
-public static final int FULLOUTERJOIN_REDIS_EXPIRE=10*60;
+public static final int FULLOUTERJOIN_REDIS_EXPIRE=5*60;
 public static final String FULLOUTERJOIN_REDIS_ORDERINFOKEY_PRE="order_info:";
 public static final String FULLOUTERJOIN_REDIS_ORDERDETAILKEY_PRE="order_detail:";
 public static final String FULLOUTERJOIN_REDIS_USERINFOKEY_PRE="user_info:";

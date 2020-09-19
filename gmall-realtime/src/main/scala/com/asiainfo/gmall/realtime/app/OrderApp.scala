@@ -28,6 +28,7 @@ object OrderApp {
     val beanStream: DStream[OrderInfo] = orderDstream.map(record => {
       //executor中执行
       val value: String = record.value()
+      //用caseclass 来封装
       JSON.parseObject(value, classOf[OrderInfo])
     })
 //    val OrderInfoBeanDstream: _root_.org.apache.spark.streaming.dstream.DStream[_root_.com.asiainfo.gmall.realtime.bean.OrderInfo] = hadleStream(beanStream)

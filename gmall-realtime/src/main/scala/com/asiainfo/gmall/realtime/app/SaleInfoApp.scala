@@ -78,7 +78,7 @@ object SaleInfoApp {
     //  参数是一个iter，要求返回也得是一个iter
     val saleDetailDstream: DStream[SaleDetail] = streamJoinStream(fullOuterJoinResultDstream)
 
-    //todo 4.6 和user_info 维表关联，把宽表信息补充完整
+    //todo 4.6 和user_info 维表关联，把宽表信息补充完整,需要先把userinfo写入缓存,下一步才是关联宽表数据
 
 
     //todo 4.7 从缓存中获取userinfo信息，把结构转化为可以写入redis的list形式[(key,saleDetailJson)]
@@ -100,7 +100,7 @@ object SaleInfoApp {
 
       }
     )
-    //    saleDetailWideTable 保存到es
+    //    saleDetailWideTable 保存到es,用于暂时即席查询,用一个分词功能
 //    saleDetailWideTable.
         saleDetailWideTable.foreachRDD(
           rdd=> {
@@ -136,18 +136,20 @@ object SaleInfoApp {
       }
 
     )
+    //如果当前没有用户表发生变化,
     userInfoBeanDstream.foreachRDD(
       rdd => {
         //这里写代码是在driver执行
         rdd.foreachPartition(
           iter => {
             //这里的 代码是在executor端执行，一个分区执行一次
+            //我觉得也是在driver端才对,jedisClient的操作所需要的隐式转换类
             implicit val formats: DefaultFormats.type = org.json4s.DefaultFormats
             val jedisClient: Jedis = RedisUtil.getJedisClient
-            for (user_info <- iter) {
+            for (user_info <- iter) {//iter为空,不会走到for循环里面
 
               val user_infoKey = GmallConstants.FULLOUTERJOIN_REDIS_USERINFOKEY_PRE + user_info.id
-              //存放到redis 中 type  string key value
+              //存放到redis 中 type  string key value,这是永不过期吗?
               jedisClient.set(user_infoKey, Serialization.write(user_info))
             }
             jedisClient.close()
@@ -281,10 +283,11 @@ object SaleInfoApp {
               listBuffer.append(sale_detailBean)
             }
           } else {
-            // todo 4.3 orderInfo 没关联上，orderDetail 有值的,
+            // todo 4.3 orderInfo 没关联上，orderDetail 有值的,主表对从表是一对多的关系,所以在设计kv的时候要用 set
             //  写缓存 type set key orderId value 多个orderDetail,因为一个order_id对应多个orderDetail
             val orderDetail: OrderDetail = orderDetailOpt.get
             val order_detailJson: String = Serialization.write(orderDetail)
+            //从表写缓存
             val order_detailKey = GmallConstants.FULLOUTERJOIN_REDIS_ORDERDETAILKEY_PRE + orderDetail.order_id
             jedis.sadd(order_detailKey, order_detailJson)
             //设置key的过期时间

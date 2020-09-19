@@ -15,6 +15,7 @@
         <module>gmall-realtime</module>
         <module>gmall-canal</module>
         <module>publisher</module>
+        <module>videodatawash</module>
     </modules>
 
     <parent>
